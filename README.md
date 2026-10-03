@@ -27,4 +27,4 @@
 git clone https://github.com/akincenk/Tradewatch.git
 cd Tradewatch
 pip install -r requirements.txt
-python main.py
+python monolith.py
