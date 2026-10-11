@@ -1,10 +1,6 @@
-fastapi>=0.95.0
-uvicorn[standard]>=0.22.0
-websockets>=11.0
-requests>=2.28
-plotly>=5.14
-dash>=2.10
-pytest>=7.3
-httpx>=0.23
-redis>=4.5
-python-dotenv>=1.0
+fastapi>=0.115
+uvicorn>=0.30
+websockets>=13.0
+requests>=2.31
+plotly>=5.20
+dash>=2.17
