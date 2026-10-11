@@ -1,6 +1,6 @@
-fastapi>=0.115
-uvicorn>=0.30
-websockets>=13.0
-requests>=2.31
-plotly>=5.20
-dash>=2.17
+fastapi==0.143.0
+uvicorn==0.54.0
+websockets==17.2
+requests==2.34.2
+plotly==7.1.0
+dash==4.4.1
