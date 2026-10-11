@@ -47,7 +47,7 @@ def update_dashboard(_n, symbol):
     recent = trades.json()[symbol]
     stats = html.Div(
         [
-            html.H3(f"{symbol.upper()} summary (last {data['trade_count']} trades)"),
+            html.H3(f"{symbol.upper()} summary (last {data['window_seconds']} s, {data['trade_count']} trades)"),
             html.P(f"Change: {data['price_change_pct']}%"),
             html.P(f"Average price: {data['avg_price']}"),
             html.P(f"Total volume: {data['total_volume']}"),
@@ -59,4 +59,4 @@ def update_dashboard(_n, symbol):
 
 
 if __name__ == "__main__":
-    app.run(debug=os.getenv("DASH_DEBUG") == "1")
+    app.run(host=os.getenv("DASH_HOST", "127.0.0.1"), port=8050, debug=os.getenv("DASH_DEBUG") == "1")

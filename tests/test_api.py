@@ -44,3 +44,26 @@ def test_recent_trades_limit_validation():
     feed(trade_msg())
     assert client.get("/trades/btcusdt", params={"limit": 0}).status_code == 422
     assert client.get("/trades/btcusdt", params={"limit": 1001}).status_code == 422
+
+
+def test_summary_window_parameter():
+    feed(trade_msg(price="100", ts=0), trade_msg(price="200", ts=100_000), trade_msg(price="220", ts=150_000))
+    assert client.get("/summary/btcusdt").json()["btcusdt"]["price_change_pct"] == 10.0  # default 60 s
+    wide = client.get("/summary/btcusdt", params={"window": 300}).json()["btcusdt"]
+    assert wide["price_change_pct"] == 120.0
+    assert wide["window_seconds"] == 300
+    assert client.get("/summary", params={"window": 0}).status_code == 422
+    assert client.get("/summary", params={"window": 301}).status_code == 422
+
+
+def test_anomalies_endpoint_flags_large_trade():
+    feed(*(trade_msg(price="100", qty=str(1 + (i % 5) * 0.1), ts=i * 100) for i in range(100)))
+    feed(trade_msg(price="100", qty="40", ts=10_000))
+    body = client.get("/anomalies/BTCUSDT").json()["btcusdt"]
+    assert [(a["kind"], a["quantity"]) for a in body] == [("size", 40.0)]
+
+
+def test_anomalies_validation_and_unknown_symbol():
+    feed(trade_msg())
+    assert client.get("/anomalies/btcusdt", params={"z": 1}).status_code == 422
+    assert client.get("/anomalies/dogeusdt").status_code == 404

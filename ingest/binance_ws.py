@@ -9,7 +9,11 @@ log = logging.getLogger(__name__)
 
 COINS = ["btcusdt", "ethusdt", "bnbusdt", "solusdt", "xrpusdt", "lrcusdt"]
 STREAM_URL = "wss://stream.binance.com:9443/stream?streams=" + "/".join(f"{coin}@trade" for coin in COINS)
-BUFFER_SIZE = 1000
+# Keep trades for up to RETENTION_SECONDS so time-window stats have the data they need.
+# BUFFER_SIZE is a memory cap on top of that; on a very busy symbol it can cut retention short,
+# which the API reports as "truncated".
+RETENTION_SECONDS = 300
+BUFFER_SIZE = 20_000
 TRADE_BUFFERS: defaultdict[str, deque] = defaultdict(lambda: deque(maxlen=BUFFER_SIZE))
 
 
@@ -22,11 +26,15 @@ def handle_trade_message(msg: dict) -> None:
     data = msg.get("data") or {}
     try:
         symbol = data["s"].lower()
-        trade = {"price": float(data["p"]), "quantity": float(data["q"]), "timestamp": data.get("T")}
+        trade = {"price": float(data["p"]), "quantity": float(data["q"]), "timestamp": int(data["T"])}
     except (KeyError, TypeError, ValueError, AttributeError):
         log.warning("Skipping malformed message: %r", msg)
         return
-    TRADE_BUFFERS[symbol].append(trade)
+    buffer = TRADE_BUFFERS[symbol]
+    buffer.append(trade)
+    cutoff = trade["timestamp"] - RETENTION_SECONDS * 1000
+    while buffer[0]["timestamp"] < cutoff:
+        buffer.popleft()
 
 
 async def binance_ws_listener(url: str = STREAM_URL, max_backoff: float = 30.0) -> None:

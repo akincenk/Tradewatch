@@ -15,7 +15,14 @@ def test_handle_trade_message_appends_parsed_trade():
 
 @pytest.mark.parametrize(
     "msg",
-    [{}, {"data": None}, {"data": {"s": "BTCUSDT"}}, {"data": {"s": "BTCUSDT", "p": "abc", "q": "1"}}, {"data": "x"}],
+    [
+        {},
+        {"data": None},
+        {"data": {"s": "BTCUSDT"}},
+        {"data": {"s": "BTCUSDT", "p": "abc", "q": "1", "T": 1}},
+        {"data": {"s": "BTCUSDT", "p": "1", "q": "1"}},  # no trade time
+        {"data": "x"},
+    ],
 )
 def test_handle_trade_message_skips_malformed(msg):
     binance_ws.handle_trade_message(msg)
@@ -28,6 +35,17 @@ def test_buffer_is_bounded():
     buf = binance_ws.TRADE_BUFFERS["btcusdt"]
     assert len(buf) == binance_ws.BUFFER_SIZE
     assert buf[0]["timestamp"] == 5
+
+
+def test_trades_older_than_retention_are_dropped():
+    retention_ms = binance_ws.RETENTION_SECONDS * 1000
+    for ts in (0, 1000, retention_ms + 500, retention_ms + 1000):
+        binance_ws.handle_trade_message(trade_msg(ts=ts))
+    assert [t["timestamp"] for t in binance_ws.TRADE_BUFFERS["btcusdt"]] == [
+        1000,
+        retention_ms + 500,
+        retention_ms + 1000,
+    ]
 
 
 def test_stream_url_subscribes_to_all_coins():

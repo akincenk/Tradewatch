@@ -13,13 +13,21 @@ def response(status, payload=None):
 
 
 def test_plots_real_recent_prices(monkeypatch):
-    summary = {"btcusdt": {"price_change_pct": 1.5, "avg_price": 101.0, "total_volume": 3.0, "trade_count": 3}}
+    summary = {
+        "btcusdt": {
+            "price_change_pct": 1.5,
+            "avg_price": 101.0,
+            "total_volume": 3.0,
+            "trade_count": 3,
+            "window_seconds": 60,
+        }
+    }
     trades = {"btcusdt": [{"price": p, "quantity": 1, "timestamp": i} for i, p in enumerate([100.0, 101.0, 102.0])]}
     monkeypatch.setattr(dashboard.requests, "get", Mock(side_effect=[response(200, summary), response(200, trades)]))
 
     stats, fig = dashboard.update_dashboard(0, "btcusdt")
     assert list(fig.data[0].y) == [100.0, 101.0, 102.0]
-    assert "last 3 trades" in stats.children[0].children
+    assert "last 60 s, 3 trades" in stats.children[0].children
 
 
 def test_waiting_message_when_no_data(monkeypatch):
