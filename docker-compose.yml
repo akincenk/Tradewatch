@@ -1,0 +1,16 @@
+services:
+  api:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  dashboard:
+    build: .
+    command: ["python", "-m", "dashboard.app"]
+    environment:
+      TRADEWATCH_API: http://api:8000
+      DASH_HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:8050:8050"
+    depends_on:
+      - api
