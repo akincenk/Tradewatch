@@ -9,3 +9,5 @@ select = ["E", "F", "I", "B", "UP"]
 testpaths = ["tests"]
 pythonpath = ["."]
 filterwarnings = ["error"]
+# dash ships a pytest plugin with old-style hooks that pytest>=9.2 rejects; tests do not use dash.testing.
+addopts = "-p no:dash"
