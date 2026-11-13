@@ -4,6 +4,9 @@
 
 Live crypto trade monitor: streams trades from the Binance public WebSocket, keeps the last few minutes of trades per symbol in memory, computes time-window stats, flags unusual activity with a rolling z-score, and serves it all through a FastAPI API and a Plotly Dash dashboard.
 
+It is for people who follow crypto markets and want a small self-hosted monitor that shows what is moving right now,
+without an account, API key or database. Planned work is in [ROADMAP.md](ROADMAP.md) and the issue tracker.
+
 ## What it does
 
 - Subscribes to the Binance combined trade stream for BTC, ETH, BNB, SOL, XRP and LRC (USDT pairs). No API key needed.
@@ -100,6 +103,8 @@ The tests never touch the network, and any warning fails the run. The stats test
 - Anomaly detection is a simple z-score against the previous 200 trades. Trade sizes and returns are heavy-tailed, so expect some false positives. Results are recomputed on each request and only available through the API; nothing sends notifications.
 - The symbol list is hardcoded in `ingest/binance_ws.py`.
 - Binance's public stream is not available in every region.
+
+Plans for these are in [ROADMAP.md](ROADMAP.md).
 
 ## Design decisions
 
